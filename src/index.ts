@@ -2,6 +2,8 @@ import { CommandoClient } from "discord.js-commando";
 import path from "path";
 import {loadConfig} from "./config/config"
 import MessageHandler from "./handler/messagehandler";
+import ReactionHandler from "./handler/reactionhandler";
+import {MessageReaction} from "discord.js";
 
 export let config = loadConfig();
 
@@ -27,12 +29,17 @@ bot.registry
 bot.on("ready", async () => {
     if (bot.user === null) return
     console.log(`${bot.user.tag} is online!`);
-    await bot.user.setActivity('Ready to suggest mute people master!')
+    await bot.user.setActivity('your submissions', {type: "WATCHING"})
 })
 
 bot.on('message', async (msg) => {
     if (msg.author == bot.user) return
-    new MessageHandler(msg, bot)
+    new MessageHandler(msg, bot);
+})
+
+bot.on('messageReactionAdd', async (reaction: MessageReaction, user) => {
+    if (user == bot.user) return
+    new ReactionHandler(reaction, user, bot);
 })
 
 // login bot for given token

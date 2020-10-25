@@ -6,7 +6,7 @@ export = class MuteCommand extends Command {
     // constructor for the command class where we define attributes used
     constructor(bot: CommandoClient) {
         super(bot, {
-            name: 'removesm',
+            name: 'unmute',
             aliases: ['rsm'],
             group: 'staff',
             memberName: 'suggestion unmute',
@@ -58,7 +58,7 @@ export = class MuteCommand extends Command {
 
 
     return msg.channel.send(`Suggetion Unmuted **${member.user.tag}**`)
-        
+
     }
     // Function that executes if something blocked the exuction of the run function.
     // e.g. Insufficient permissions, throttling, nsfw, ...
@@ -66,8 +66,8 @@ export = class MuteCommand extends Command {
         // Member that wanted to unmute didn't have enough perms to do it. Report
         // it back and delete message after a second.
         return (await msg.channel.send("Insufficient permissions to run this command."));/*.delete({timeout:utils.MILIS});/*/
-        
-    
-    
+
+
+
     }
 }

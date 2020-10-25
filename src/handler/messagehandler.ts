@@ -1,4 +1,4 @@
-import {Message, MessageAttachment, MessageEmbed, TextChannel} from "discord.js";
+import {FileOptions, Message, MessageAttachment, MessageEmbed, TextChannel} from "discord.js";
 import {pool} from "../db/db";
 import {selectAnon} from "../commands/bot/utils";
 import {CommandoClient} from "discord.js-commando";
@@ -20,7 +20,6 @@ export default class MessageHandler {
         let event = await pool.query("SELECT * FROM anon_muting.events WHERE submissions_channel_id = $1", [this.msg.channel.id])
         if (event.rowCount === 0) return // Return if channel not in database
 
-
         let channel = (await this.client.channels.fetch(event.rows[0].review_channel_id, true, true)) as TextChannel;
         let embed = new MessageEmbed({
             title: 'Submission review',
@@ -37,24 +36,33 @@ export default class MessageHandler {
         let img;
 
         if (attachment != undefined) {
-            request.get(attachment.url, function (err: any, res: any, body: Buffer) {
-                img = res.body
-                console.log(img)
-            })
+            img = await new Promise((resolve, reject) => {
+                // @ts-ignore
+                request.get(attachment.url, async function (err: any, res: any, body: Buffer) {
+                    if (body != undefined) {
+                        resolve(body)
+                    }
+                })
+            });
         }
 
         if (img != undefined) {
-            console.log("Here!")
-            embed.attachFiles([img])
-            // embed.setImage("attachment://file.jpg")
+            embed.attachFiles([(img) as FileOptions])
+            embed.setImage("attachment://file.jpg")
         }
 
-        await channel.send(embed);
+        let review_msg = await channel.send(embed);
 
-        // await this.msg.delete();
+        await this.msg.delete();
 
         let DMChannel = await this.msg.author.createDM();
         await DMChannel.send("Thanks for submitting! Your post is currently in review and will show up shortly");
 
+        await review_msg.react('👍')
+        await review_msg.react('👎')
+
+        await pool.query("INSERT INTO anon_muting.submissions \
+            (user_id, review_message_id, event_id) VALUES \
+            ($1, $2, $3)", [this.msg.author.id, review_msg.id, event.rows[0].event_id])
     }
 }

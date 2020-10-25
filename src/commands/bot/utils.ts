@@ -1,5 +1,6 @@
 import * as discord from "discord.js";
 import {DMChannel, Message} from "discord.js";
+import {pool} from "../../db/db";
 
 
 export async function getMember(uid: string, guild: discord.Guild) {
@@ -48,4 +49,9 @@ export function sleep(ms: number) {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
     });
+}
+
+export async function checkIfUserMuted(user_id: string) {
+    let res = await pool.query("SELECT * FROM anon_muting.users WHERE user_id = $1")
+    return !(res.rowCount === 0 || !res.rows[0].muted);
 }
