@@ -1,4 +1,5 @@
 import * as discord from "discord.js";
+import {DMChannel, Message} from "discord.js";
 
 
 export async function getMember(uid: string, guild: discord.Guild) {
@@ -11,10 +12,40 @@ export async function getMember(uid: string, guild: discord.Guild) {
     }
     // Try recovering the user and report if it was successful or not.
     try {
-        let member = await guild.members.fetch(uidParsed);
-        return member;
+        return await guild.members.fetch(uidParsed);
     } catch(e) {
         console.log(`User not found because ${e}`);
         return undefined;
     }
+}
+
+export async function selectAnon(msg: Message, channel: DMChannel) {
+    let embed = new discord.MessageEmbed()
+    embed.title = "Hello Gamers";
+    let embedMsg = await channel.send(embed);
+    await embedMsg.react('👍')
+    let collected = await embedMsg.awaitReactions((reaction, user) => {return ['👍'].includes(reaction.emoji.name) && user.id === msg.author.id},
+        {max: 1, time: 60000, errors: ['time']})
+
+    const reaction = collected.first();
+    if (reaction == undefined) {
+        console.error("How tf did you get here")
+        return
+    }
+
+    switch (reaction.emoji.name) {
+        case '👍':
+            return true
+        case '👎':
+            return false
+        default:
+            await channel.send("Wrong emote smh my head");
+            return false
+    }
+}
+
+export function sleep(ms: number) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 }
