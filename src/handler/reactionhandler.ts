@@ -1,14 +1,13 @@
 import {FileOptions, Message, MessageAttachment, MessageEmbed, MessageReaction, TextChannel, User} from "discord.js";
 import {pool} from "../db/db";
-import {selectAnon} from "../commands/bot/utils";
 import {CommandoClient} from "discord.js-commando";
 
 export default class ReactionHandler {
     private readonly reaction: MessageReaction;
     private client: CommandoClient;
     private user: User;
-    private red: number;
-    private green: number;
+    private readonly red: number;
+    private readonly green: number;
 
     constructor(Reaction: MessageReaction, User: User, client: CommandoClient) {
         this.reaction = Reaction;

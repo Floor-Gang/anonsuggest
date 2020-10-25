@@ -4,6 +4,7 @@ import {loadConfig} from "./config/config"
 import MessageHandler from "./handler/messagehandler";
 import ReactionHandler from "./handler/reactionhandler";
 import {MessageReaction} from "discord.js";
+import {MuteLoop} from "./loops/muteloop";
 
 export let config = loadConfig();
 
@@ -19,7 +20,8 @@ bot.registry
     .registerGroups([
         ["public"],
         ["staff"],
-        ["logs"]
+        ["logs"],
+        ["events"]
     ])
     .registerDefaults()
     .registerCommandsIn(path.join(__dirname, 'commands'));
@@ -30,6 +32,11 @@ bot.on("ready", async () => {
     if (bot.user === null) return
     console.log(`${bot.user.tag} is online!`);
     await bot.user.setActivity('your submissions', {type: "WATCHING"})
+
+    let muteloop = new MuteLoop(bot);
+    setInterval(() => {
+        muteloop.run().then(_ => _)
+    },  300000) // 5 Minutes (300000)
 })
 
 bot.on('message', async (msg) => {
