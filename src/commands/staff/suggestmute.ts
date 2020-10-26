@@ -20,7 +20,7 @@ export = class MuteCommand extends commando.Command {
                     key: 'UserID',
                     prompt: 'ID of a user that will be muted',
                     type: 'string'
-                },
+                }
             ],
             argsPromptLimit: 0,
             argsType: 'multiple',
@@ -62,7 +62,7 @@ export = class MuteCommand extends commando.Command {
         return await msg.channel.send(`Suggestion Muted **${member.user.tag}** ${getMuteReadableTime(offence)}`)
     }
 
-    // Function that executes if something blocked the exuction of the run function.
+    // Function that executes if something blocked the execution of the run function.
     // e.g. Insufficient permissions, throttling, nsfw, ...
     async onBlock(msg: CommandoMessage) {
         // Member that wanted to unmute didn't have enough perms to do it. Report

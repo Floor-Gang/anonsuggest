@@ -35,7 +35,7 @@ export = class CreateEvent extends Command {
 
         return await msg.say("I will stop looking in those channels!");
     }
-    // Function that executes if something blocked the exuction of the run function.
+    // Function that executes if something blocked the execution of the run function.
     // e.g. Insufficient permissions, throttling, nsfw, ...
     async onBlock(msg: CommandoMessage) {
         // Member that wanted to unmute didn't have enough perms to do it. Report
