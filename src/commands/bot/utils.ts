@@ -87,3 +87,7 @@ export function getMuteReadableTime(offence: number) {
             return "permanently"
     }
 }
+
+export function getFileExtension(filename: string) {
+    return filename.substr(filename.lastIndexOf('.')+1);
+}

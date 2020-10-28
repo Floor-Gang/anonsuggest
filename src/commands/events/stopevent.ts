@@ -7,7 +7,7 @@ export = class CreateEvent extends Command {
     constructor(bot: CommandoClient) {
         super(bot, {
             name: 'stop_event',
-            aliases: ['sevent', 'event_stop', 'sev', 'delete_event', 'devent', 'event_delete', 'dev'],
+            aliases: ['sevent', 'event_stop', 'sev', 'delete_event', 'devent', 'event_delete', 'dev', 'clear'],
             group: 'events',
             memberName: 'stop event',
             userPermissions: ['MANAGE_ROLES'],

@@ -1,6 +1,6 @@
-import {FileOptions, Message, MessageEmbed, TextChannel} from "discord.js";
+import {FileOptions, Message, MessageAttachment, MessageEmbed, TextChannel} from "discord.js";
 import {pool} from "../db/db";
-import {checkIfUserMuted} from "../commands/bot/utils";
+import {checkIfUserMuted, getFileExtension} from "../commands/bot/utils";
 import {CommandoClient} from "discord.js-commando";
 
 const request = require('request').defaults({encoding: null});
@@ -33,6 +33,9 @@ export default class MessageHandler {
                 name: `${this.msg.author.username}#${this.msg.author.discriminator}`,
                 iconURL: this.msg.author.displayAvatarURL(),
             },
+            footer: {
+                text: `Event: ${event.rows[0].name}`
+            },
             color: "BLURPLE",
         });
 
@@ -40,6 +43,11 @@ export default class MessageHandler {
         let img;
 
         if (attachment != undefined) {
+            if (event.rows[0].restriction === 4) {
+                await this.msg.delete();
+                return await DMChannel.send("Sorry, this event is text only. No attachments allowed");
+            }
+
             img = await new Promise((resolve, reject) => {
                 // @ts-ignore
                 request.get(attachment.url, async function (err: any, res: any, body: Buffer) {
@@ -51,8 +59,15 @@ export default class MessageHandler {
         }
 
         if (img != undefined) {
-            embed.attachFiles([(img) as FileOptions])
-            embed.setImage("attachment://file.jpg")
+            // @ts-ignore
+            const ext = getFileExtension(attachment.name)
+            if (!await MessageHandler.checkIfExtValid(ext, event.rows[0].restriction)) {
+                await this.msg.delete();
+                return await DMChannel.send("Sorry, that file extension is not allowed in the current event.\n" +
+                    "If it does follow the rules try formatting it to a common extension like png or mp4");
+            }
+            embed.files = [new MessageAttachment((img) as Buffer, `file.${ext}`)]
+            embed.setImage(`attachment://file.${ext}`)
         }
 
         let review_msg = await channel.send(embed);
@@ -63,9 +78,31 @@ export default class MessageHandler {
 
         await review_msg.react('👍')
         await review_msg.react('👎')
+        await review_msg.react('🔇')
 
         await pool.query("INSERT INTO anon_muting.submissions \
             (user_id, review_message_id, event_id) VALUES \
             ($1, $2, $3)", [this.msg.author.id, review_msg.id, event.rows[0].event_id])
+    }
+
+    private static async checkIfExtValid(extension: string, restriction: number): Promise<boolean> {
+        // 0: No restrictions
+        // 1: image only
+        // 2: gif/video only
+        // 3: mp4/gif/image only
+        // 4: text only
+
+        switch (restriction) {
+            case 0:
+                return true;
+            case 1:
+                return (/\|jpe?g|tiff?|png|webp|bmp$/i).test(extension);
+            case 2:
+                return (/\|gif|mp4|mov|wmv|flv$/i).test(extension);
+            case 3:
+                return (/\|gif|mp4|mov|wmv|flv|jpe?g|tiff?|png|webp|bmp$/i).test(extension);
+            default:
+                return false
+        }
     }
 }
