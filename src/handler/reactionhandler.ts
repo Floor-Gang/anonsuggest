@@ -102,6 +102,8 @@ export default class ReactionHandler {
                 return;
         }
 
+        await this.reaction.message.reactions.removeAll();
+
         await pool.query("UPDATE anon_muting.submissions \
             SET approved = $1, reviewed_by = $2 \
             WHERE submission_id = $3", [approved, this.user.id, submission.rows[0].submission_id]);
